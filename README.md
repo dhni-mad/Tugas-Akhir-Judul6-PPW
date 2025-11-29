@@ -1,6 +1,8 @@
 # Tugas-Akhir-Judul6-PPW
 
 Penjelasan TA 6
+Deskripsi Singkat:
+Jadi saya menggunakan openweathermap untuk api pihak ketiga yang dimana saya gunakan untuk mengambil data cuacanya. Kemudian tampilan yang saya buat disesuaikan dengan penjelasan pembuatan tugas akhir pada modul, seperti ada 2 tema light dan dark mode kemudian ada toggle fahrenheit dan celcius dll nya.
 
 <img width="1919" height="966" alt="Screenshot 2025-11-30 000642" src="https://github.com/user-attachments/assets/5cbc0871-c785-4fc4-8d19-9c5c5385dc69" />
 Ini merupakan gambar dengan keterangan suhu celcius dan tema terang.
