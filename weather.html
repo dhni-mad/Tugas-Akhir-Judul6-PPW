@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        glass: "rgba(255, 255, 255, 0.2)",
+                        glassDark: "rgba(15, 23, 42, 0.6)"
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        body {
+            transition: background 0.5s ease;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .bg-day { background-image: linear-gradient(135deg, #60a5fa, #bfdbfe); }
+        .bg-night { background-image: linear-gradient(135deg, #1e3a8a, #0f172a); }
+    </style>
+</head>
+
+<body class="bg-day min-h-screen text-gray-800 dark:text-gray-100 p-4 md:p-8 transition-colors duration-300">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-white/30 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/20">
+            
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-cloud-sun text-3xl text-blue-600 dark:text-blue-400"></i>
+                <h1 class="text-2xl font-bold tracking-wide">Weather Dashboard</h1>
+            </div>
+
+            <div class="relative w-full md:w-96 group">
+                <div class="flex items-center bg-white/50 dark:bg-slate-800/50 rounded-full px-4 py-2 border border-transparent focus-within:border-blue-400 transition-all shadow-sm">
+                    <i class="fa-solid fa-search text-gray-500 dark:text-gray-400 mr-2"></i>
+                    <input type="text" id="cityInput" placeholder="Cari nama kota..." 
+                           class="bg-transparent border-none outline-none w-full placeholder-gray-500 dark:placeholder-gray-400 text-sm"
+                           autocomplete="off">
+                    <div id="searchLoader" class="loader hidden" style="width: 15px; height: 15px; border-width: 2px;"></div>
+                </div>
+                <ul id="suggestions" class="absolute top-full left-0 w-full bg-white dark:bg-slate-800 mt-2 rounded-xl shadow-xl overflow-hidden hidden z-50 border border-gray-200 dark:border-slate-700"></ul>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="toggleUnit()" id="unitBtn" class="w-10 h-10 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-blue-500 hover:text-white transition shadow-sm flex items-center justify-center font-bold">
+                    °C
+                </button>
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-yellow-400 transition shadow-sm flex items-center justify-center">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="manualRefresh()" class="w-10 h-10 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-green-500 hover:text-white transition shadow-sm flex items-center justify-center" title="Refresh Data">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="bg-white/40 dark:bg-slate-800/60 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-white/20 relative overflow-hidden">
+                    
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 id="cityName" class="text-3xl md:text-5xl font-bold mb-1">Jakarta</h2>
+                            <p id="currentDate" class="text-sm opacity-80">Senin, 18 November 2025</p>
+                        </div>
+                        <button onclick="toggleFavorite()" id="favBtn" class="text-2xl text-gray-400 hover:text-red-500 transition">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center justify-between mt-8 gap-6">
+                        <div class="flex items-center">
+                            <img id="weatherIcon" src="" alt="Weather Icon" class="w-24 h-24 md:w-32 md:h-32 drop-shadow-lg">
+                            <div>
+                                <div class="text-6xl md:text-7xl font-bold tracking-tighter" id="temp">32°</div>
+                                <p id="weatherDesc" class="text-xl capitalize font-medium mt-1">Cerah Berawan</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
+                            <div class="bg-white/30 dark:bg-slate-700/30 p-4 rounded-2xl flex items-center gap-3">
+                                <i class="fa-solid fa-droplet text-blue-500 text-xl"></i>
+                                <div>
+                                    <p class="text-xs opacity-70">Kelembapan</p>
+                                    <p id="humidity" class="font-bold">60%</p>
+                                </div>
+                            </div>
+                            <div class="bg-white/30 dark:bg-slate-700/30 p-4 rounded-2xl flex items-center gap-3">
+                                <i class="fa-solid fa-wind text-gray-500 text-xl"></i>
+                                <div>
+                                    <p class="text-xs opacity-70">Angin</p>
+                                    <p id="windSpeed" class="font-bold">12 km/h</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-right mt-6 opacity-60">Terakhir update: <span id="lastUpdate">--:--</span></p>
+                </div>
+
+                <div class="bg-white/30 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl p-6 shadow-lg border border-white/20">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-blue-500"></i> Ramalan 5 Hari Kedepan
+                    </h3>
+                    <div id="forecastContainer" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="bg-white/40 dark:bg-slate-700/40 p-4 rounded-2xl text-center animate-pulse h-32"></div>
+                        <div class="bg-white/40 dark:bg-slate-700/40 p-4 rounded-2xl text-center animate-pulse h-32"></div>
+                        <div class="bg-white/40 dark:bg-slate-700/40 p-4 rounded-2xl text-center animate-pulse h-32"></div>
+                        <div class="bg-white/40 dark:bg-slate-700/40 p-4 rounded-2xl text-center animate-pulse h-32"></div>
+                        <div class="bg-white/40 dark:bg-slate-700/40 p-4 rounded-2xl text-center animate-pulse h-32"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white/30 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl p-6 shadow-lg border border-white/20 h-full">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-star text-yellow-400"></i> Kota Favorit
+                    </h3>
+                    <div id="favoriteList" class="space-y-3">
+                        <p class="text-sm opacity-60 italic text-center py-4">Belum ada kota favorit.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API_KEY = '283ce8346c4a0d2df78ae93fedf544b1';
+        const BASE_URL = 'https://api.openweathermap.org/data/2.5';
+        
+        let currentCity = 'Bandar Lampung';
+        let units = 'metric';
+        let updateInterval;
+        let favoriteCities = JSON.parse(localStorage.getItem('favCities')) || [];
+
+        const cityInput = document.getElementById('cityInput');
+        const suggestionsBox = document.getElementById('suggestions');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        window.addEventListener('load', () => {
+            loadTheme();
+            getWeather(currentCity);
+            renderFavorites();
+            
+            updateInterval = setInterval(() => getWeather(currentCity), 300000);
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                body.classList.remove('bg-night');
+                body.classList.add('bg-day');
+                themeIcon.className = 'fa-solid fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                body.classList.remove('bg-day');
+                body.classList.add('bg-night');
+                themeIcon.className = 'fa-solid fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                toggleTheme();
+            }
+        }
+
+        function toggleUnit() {
+            units = units === 'metric' ? 'imperial' : 'metric';
+            document.getElementById('unitBtn').innerText = units === 'metric' ? '°C' : '°F';
+            getWeather(currentCity);
+        }
+
+        async function getWeather(city) {
+            if (API_KEY === 'MASUKKAN_API_KEY_ANDA_DISINI') {
+                alert('Silakan masukkan API Key OpenWeatherMap Anda di dalam kode JavaScript baris 178!');
+                return;
+            }
+
+            try {
+                document.getElementById('cityName').innerText = "Loading...";
+                
+                const currentRes = await fetch(`${BASE_URL}/weather?q=${city}&units=${units}&appid=${API_KEY}&lang=id`);
+                if (!currentRes.ok) throw new Error('Kota tidak ditemukan');
+                const currentData = await currentRes.json();
+
+                const { lat, lon } = currentData.coord;
+                const forecastRes = await fetch(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${units}&appid=${API_KEY}&lang=id`);
+                const forecastData = await forecastRes.json();
+
+                updateUI(currentData, forecastData);
+                currentCity = currentData.name;
+                updateFavoriteBtnState();
+
+            } catch (error) {
+                alert(error.message);
+                document.getElementById('cityName').innerText = "Error";
+            }
+        }
+
+        function updateUI(current, forecast) {
+            document.getElementById('cityName').innerText = current.name;
+            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('temp').innerText = Math.round(current.main.temp) + '°';
+            document.getElementById('weatherDesc').innerText = current.weather[0].description;
+            document.getElementById('humidity').innerText = current.main.humidity + '%';
+            document.getElementById('windSpeed').innerText = current.wind.speed + (units === 'metric' ? ' km/h' : ' mph');
+            document.getElementById('weatherIcon').src = `https://openweathermap.org/img/wn/${current.weather[0].icon}@4x.png`;
+            
+            const now = new Date();
+            document.getElementById('lastUpdate').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            const dailyForecast = forecast.list.filter(item => item.dt_txt.includes("12:00:00"));
+            const forecastContainer = document.getElementById('forecastContainer');
+            forecastContainer.innerHTML = '';
+
+            dailyForecast.slice(0, 5).forEach(day => {
+                const date = new Date(day.dt * 1000);
+                const dayName = date.toLocaleDateString('id-ID', { weekday: 'short' });
+                
+                const card = document.createElement('div');
+                card.className = "bg-white/30 dark:bg-slate-700/30 p-4 rounded-2xl text-center flex flex-col items-center hover:bg-white/50 transition";
+                card.innerHTML = `
+                    <p class="font-bold mb-1">${dayName}</p>
+                    <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" class="w-12 h-12">
+                    <p class="font-bold text-lg">${Math.round(day.main.temp)}°</p>
+                    <p class="text-xs opacity-70 capitalize">${day.weather[0].description}</p>
+                `;
+                forecastContainer.appendChild(card);
+            });
+        }
+
+        let debounceTimer;
+        cityInput.addEventListener('input', function() {
+            const query = this.value;
+            suggestionsBox.innerHTML = '';
+            suggestionsBox.classList.add('hidden');
+            
+            if (query.length < 3) return;
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                document.getElementById('searchLoader').classList.remove('hidden');
+                
+                try {
+                    const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${API_KEY}`);
+                    const cities = await res.json();
+                    
+                    suggestionsBox.innerHTML = '';
+                    if (cities.length > 0) {
+                        suggestionsBox.classList.remove('hidden');
+                        cities.forEach(city => {
+                            const li = document.createElement('li');
+                            li.className = "px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer text-sm border-b border-gray-100 dark:border-slate-700 last:border-0";
+                            li.innerHTML = `<strong>${city.name}</strong>, <span class="text-gray-500 text-xs">${city.state || ''}, ${city.country}</span>`;
+                            li.onclick = () => {
+                                cityInput.value = city.name;
+                                suggestionsBox.classList.add('hidden');
+                                getWeather(city.name);
+                            };
+                            suggestionsBox.appendChild(li);
+                        });
+                    }
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    document.getElementById('searchLoader').classList.add('hidden');
+                }
+            }, 500);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!cityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.classList.add('hidden');
+            }
+        });
+
+        cityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                getWeather(cityInput.value);
+                suggestionsBox.classList.add('hidden');
+            }
+        });
+
+        function toggleFavorite() {
+            const btn = document.getElementById('favBtn');
+            const index = favoriteCities.indexOf(currentCity);
+
+            if (index === -1) {
+                favoriteCities.push(currentCity);
+                btn.classList.remove('text-gray-400');
+                btn.classList.add('text-red-500', 'fa-solid');
+                btn.classList.remove('fa-regular');
+            } else {
+                favoriteCities.splice(index, 1);
+                btn.classList.add('text-gray-400', 'fa-regular');
+                btn.classList.remove('text-red-500', 'fa-solid');
+            }
+            
+            localStorage.setItem('favCities', JSON.stringify(favoriteCities));
+            renderFavorites();
+        }
+
+        function updateFavoriteBtnState() {
+            const btn = document.getElementById('favBtn');
+            if (favoriteCities.includes(currentCity)) {
+                btn.classList.remove('text-gray-400', 'fa-regular');
+                btn.classList.add('text-red-500', 'fa-solid');
+            } else {
+                btn.classList.add('text-gray-400', 'fa-regular');
+                btn.classList.remove('text-red-500', 'fa-solid');
+            }
+        }
+
+        function renderFavorites() {
+            const list = document.getElementById('favoriteList');
+            list.innerHTML = '';
+            
+            if (favoriteCities.length === 0) {
+                list.innerHTML = '<p class="text-sm opacity-60 italic text-center py-4">Belum ada kota favorit.</p>';
+                return;
+            }
+
+            favoriteCities.forEach(city => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-white/40 dark:bg-slate-700/40 p-3 rounded-xl hover:bg-white/60 transition cursor-pointer group";
+                item.innerHTML = `
+                    <span class="font-medium" onclick="getWeather('${city}')">${city}</span>
+                    <button onclick="removeFavorite('${city}')" class="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function removeFavorite(city) {
+            favoriteCities = favoriteCities.filter(c => c !== city);
+            localStorage.setItem('favCities', JSON.stringify(favoriteCities));
+            renderFavorites();
+            if (currentCity === city) updateFavoriteBtnState();
+        }
+
+        function manualRefresh() {
+            getWeather(currentCity);
+        }
+
+    </script>
+</body>
+</html>
