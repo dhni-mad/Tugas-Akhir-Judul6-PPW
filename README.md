@@ -2,7 +2,10 @@
 
 # Penjelasan TA 6
 Deskripsi Singkat:
-Jadi saya menggunakan openweathermap untuk api pihak ketiga yang dimana saya gunakan untuk mengambil data cuacanya. Kemudian tampilan yang saya buat disesuaikan dengan penjelasan pembuatan tugas akhir pada modul, seperti ada 2 tema light dan dark mode kemudian ada toggle fahrenheit dan celcius dll nya.
+Jadi saya menggunakan openweathermap untuk api pihak ketiga yang dimana saya gunakan untuk mengambil data cuacanya. Kemudian tampilan yang saya buat disesuaikan dengan penjelasan pembuatan tugas akhir pada modul, seperti ada 2 tema light dan dark mode kemudian ada toggle fahrenheit dan celcius dll nya. 
+
+# Teknologi yang digunakan
+Untuk pembuatan TA ini saya menggunakan Tailwind (Styling), Font awesome 6 (untuk UI Ikon) dan OpenWeatherMap Ikon (khusus untuk ikon kondisi cuaca), Logika dan Pemrograman (Javascript), Api ari openweathermap (untuk data cuaca)
 
 # SS Tampilan
 <img width="1919" height="966" alt="Screenshot 2025-11-30 000642" src="https://github.com/user-attachments/assets/5cbc0871-c785-4fc4-8d19-9c5c5385dc69" />
